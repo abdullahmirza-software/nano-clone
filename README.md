@@ -69,4 +69,3 @@ Money is stored as integer cents throughout (`budgetCents`, `pricePerPostCents`,
 
 - Campaign/booking data is per-browser (localStorage), not shared across devices or users.
 - No automated test suite — everything was verified manually in a real browser.
-- Nothing has been committed to git yet as part of this build.
