@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design tokens for the Naano clone, matched against an actual screenshot of naano.com:
+  near-black "ink" primary buttons, a soft cotton-blue secondary/tertiary tint used for
+  hero/footer sky-gradient backgrounds and low-emphasis surfaces, and navy/charcoal text.
+  --ai is reserved for the small violet accent naano uses on its AI affordances (the
+  sparkle icon on the AI-draft button) — the real site's AI search bar itself is a
+  neutral white pill, not a colored button, so --ai stays an icon accent, not a fill.
+  All colors are HSL triplets (no "hsl()" wrapper) so Tailwind can add opacity modifiers.
+*/
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --muted: 210 30% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --border: 214 25% 90%;
+    --input: 214 25% 90%;
+    --ring: 222 47% 11%;
+
+    /* Primary: near-black ink (matches naano.com's solid "Launch a campaign" / "Sign up" pills) */
+    --primary: 222 47% 11%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: soft cotton-blue tint used for hero/footer sky backgrounds and low-emphasis buttons */
+    --secondary: 205 65% 94%;
+    --secondary-foreground: 217 40% 22%;
+
+    /* Tertiary/accent: slightly stronger blue used for badges and highlighted chips */
+    --accent: 205 70% 91%;
+    --accent-foreground: 205 70% 28%;
+
+    /* AI accent: violet, used only for icon color on AI-labeled actions, never as a button fill */
+    --ai: 245 75% 60%;
+    --ai-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --radius: 0.625rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
