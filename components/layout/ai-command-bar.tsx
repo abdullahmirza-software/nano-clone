@@ -55,7 +55,7 @@ export function AICommandBar() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex w-[calc(100%-2rem)] max-w-md flex-col items-end gap-1 sm:bottom-6 sm:right-6">
+    <div className="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-[calc(100%-2rem)] max-w-md flex-col items-center gap-1 sm:bottom-6">
       <button
         type="button"
         onClick={() => setMinimized(true)}
