@@ -4,3 +4,7 @@ out
 .env*.local
 .DS_Store
 npm-debug.log*
+
+# capture-hook bookkeeping only (not the logs themselves — .agent-logs/ ships with the repo)
+.claude/hooks/.state/
+.claude/hooks/__pycache__/
