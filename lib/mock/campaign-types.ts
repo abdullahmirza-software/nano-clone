@@ -18,6 +18,20 @@ export type CampaignCTAType = (typeof CTA_TYPES)[number]["value"];
 
 export type CampaignStatus = "draft" | "active" | "completed";
 
+export const CAMPAIGN_STATUS_BADGE_VARIANT: Record<CampaignStatus, "secondary" | "success" | "outline"> = {
+  draft: "secondary",
+  active: "success",
+  completed: "outline",
+};
+
+export function objectiveLabel(value: string): string {
+  return OBJECTIVES.find((o) => o.value === value)?.label ?? value;
+}
+
+export function ctaLabel(value: string): string {
+  return CTA_TYPES.find((c) => c.value === value)?.label ?? value;
+}
+
 export interface Campaign {
   id: string;
   name: string;

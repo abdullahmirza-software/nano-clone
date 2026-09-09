@@ -12,12 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
-import { cn, formatCents } from "@/lib/utils";
+import { cn, formatCents, generateId } from "@/lib/utils";
 import { saveCampaign } from "@/lib/campaigns";
 import {
   OBJECTIVES,
   CTA_TYPES,
   getAIDraft,
+  objectiveLabel,
+  ctaLabel,
   type Campaign,
   type CampaignObjective,
   type CampaignCTAType,
@@ -51,18 +53,11 @@ const INITIAL_STATE: FormState = {
   ctaText: "",
 };
 
-function objectiveLabel(value: string) {
-  return OBJECTIVES.find((o) => o.value === value)?.label ?? value;
-}
-
-function ctaLabel(value: string) {
-  return CTA_TYPES.find((c) => c.value === value)?.label ?? value;
-}
-
 export default function NewCampaignPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
+  const [submitError, setSubmitError] = useState("");
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -83,7 +78,9 @@ export default function NewCampaignPage() {
     form.name.trim() !== "" && form.objective !== "",
     form.headline.trim() !== "" && form.body.trim() !== "" && form.targetAudience.trim() !== "",
     form.budget !== "" &&
-      Number(form.budget) > 0 &&
+      // Guard against sub-cent budgets (e.g. "0.001") that pass a plain `> 0` check but
+      // round down to 0 cents — validate the actual stored value, not the raw dollar input.
+      Math.round(Number(form.budget) * 100) > 0 &&
       form.startDate !== "" &&
       form.endDate !== "" &&
       form.startDate <= form.endDate,
@@ -92,7 +89,7 @@ export default function NewCampaignPage() {
   ];
 
   function handleSubmit() {
-    const id = `campaign-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const id = generateId("campaign");
     const campaign: Campaign = {
       id,
       name: form.name.trim(),
@@ -108,8 +105,12 @@ export default function NewCampaignPage() {
       status: "draft",
       createdAt: new Date().toISOString(),
     };
-    saveCampaign(campaign);
-    router.push(`/campaigns/${id}`);
+    try {
+      saveCampaign(campaign);
+      router.push(`/campaigns/${id}`);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "We couldn't save your campaign. Please try again.");
+    }
   }
 
   return (
@@ -341,6 +342,8 @@ export default function NewCampaignPage() {
             )}
           </CardContent>
         </Card>
+
+        {submitError && <p className="text-sm text-destructive">{submitError}</p>}
 
         <div className="flex items-center justify-between">
           <Button

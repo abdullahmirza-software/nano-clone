@@ -26,14 +26,16 @@ export default function CreatorsPage() {
 
 function CreatorsPageContent() {
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState("");
+  const urlQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(urlQuery);
 
   useEffect(() => {
-    const q = searchParams.get("q");
-    if (q) setQuery(q);
-    // Only seed from the URL once on mount — after that, the search box owns its own state.
+    // Re-sync whenever the URL's ?q= changes (e.g. a new search submitted from the
+    // sitewide AI command bar while already on this page). Typing directly in the
+    // search box below doesn't touch the URL, so this won't fight the user's typing.
+    setQuery(urlQuery);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [urlQuery]);
   const [selectedVerticals, setSelectedVerticals] = useState<string[]>([]);
   const [location, setLocation] = useState(ALL_LOCATIONS);
   const [minFollowers, setMinFollowers] = useState("");

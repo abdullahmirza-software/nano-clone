@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,35 +9,26 @@ import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Grid } from "@/components/layout/grid";
 import { formatCents } from "@/lib/utils";
-import { getCampaigns } from "@/lib/campaigns";
+import { getCampaignsOrSeed } from "@/lib/campaigns";
 import { getCampaignStats } from "@/lib/mock/dashboard-stats";
-import { SEED_CAMPAIGNS } from "@/lib/mock/seed-campaigns";
-import { OBJECTIVES, type Campaign } from "@/lib/mock/campaign-types";
-
-const STATUS_BADGE_VARIANT = {
-  draft: "secondary",
-  active: "success",
-  completed: "outline",
-} as const;
-
-function objectiveLabel(value: string) {
-  return OBJECTIVES.find((o) => o.value === value)?.label ?? value;
-}
+import { CAMPAIGN_STATUS_BADGE_VARIANT, objectiveLabel, type Campaign } from "@/lib/mock/campaign-types";
 
 export default function DashboardPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [usingSeedData, setUsingSeedData] = useState(false);
 
   useEffect(() => {
-    const saved = getCampaigns();
-    if (saved.length > 0) {
-      setCampaigns(saved);
-      setUsingSeedData(false);
-    } else {
-      setCampaigns(SEED_CAMPAIGNS);
-      setUsingSeedData(true);
-    }
+    const { campaigns, usingSeedData } = getCampaignsOrSeed();
+    setCampaigns(campaigns);
+    setUsingSeedData(usingSeedData);
   }, []);
+
+  // Stats are deterministic per campaign id — compute once per campaigns change instead
+  // of re-running the stats generator for every card on every render.
+  const campaignsWithStats = useMemo(
+    () => campaigns.map((campaign) => ({ campaign, stats: getCampaignStats(campaign.id) })),
+    [campaigns]
+  );
 
   return (
     <Section>
@@ -57,15 +48,14 @@ export default function DashboardPage() {
         </div>
 
         <Grid cols={3}>
-          {campaigns.map((campaign) => {
-            const stats = getCampaignStats(campaign.id);
+          {campaignsWithStats.map(({ campaign, stats }) => {
             return (
               <Link key={campaign.id} href={`/dashboard/${campaign.id}`}>
                 <Card className="h-full transition-colors hover:border-primary/50">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                      <Badge variant={STATUS_BADGE_VARIANT[campaign.status]} className="shrink-0 capitalize">
+                      <Badge variant={CAMPAIGN_STATUS_BADGE_VARIANT[campaign.status]} className="shrink-0 capitalize">
                         {campaign.status}
                       </Badge>
                     </div>

@@ -34,7 +34,14 @@ function NumberField({ id, label, hint, value, onChange, prefix, suffix, min = 0
           min={min}
           step="any"
           value={Number.isFinite(value) ? value : ""}
-          onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              onChange(0);
+              return;
+            }
+            const parsed = Number(e.target.value);
+            onChange(Number.isFinite(parsed) ? Math.max(min, parsed) : min);
+          }}
           className={prefix ? "pl-7" : suffix ? "pr-9" : undefined}
         />
         {suffix && (

@@ -31,3 +31,8 @@ const AVATAR_PALETTE = [
 export function initialsColor(initials: string): string {
   return AVATAR_PALETTE[initials.charCodeAt(0) % AVATAR_PALETTE.length];
 }
+
+/** Client-side unique id for mock records (campaigns, bookings, ...). Not cryptographically unique — fine for a demo/local-storage app. */
+export function generateId(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
@@ -12,35 +12,23 @@ import { Section } from "@/components/layout/section";
 import { ClicksChart } from "@/components/dashboard/clicks-chart";
 import { formatCents } from "@/lib/utils";
 import { getCampaign } from "@/lib/campaigns";
-import { getCampaignStats, type CampaignDashboardStats } from "@/lib/mock/dashboard-stats";
-import { SEED_CAMPAIGNS } from "@/lib/mock/seed-campaigns";
-import { OBJECTIVES, type Campaign } from "@/lib/mock/campaign-types";
-
-const STATUS_BADGE_VARIANT = {
-  draft: "secondary",
-  active: "success",
-  completed: "outline",
-} as const;
-
-function objectiveLabel(value: string) {
-  return OBJECTIVES.find((o) => o.value === value)?.label ?? value;
-}
-
-function getCampaignAnywhere(id: string): Campaign | undefined {
-  return getCampaign(id) ?? SEED_CAMPAIGNS.find((c) => c.id === id);
-}
+import { getCampaignStats } from "@/lib/mock/dashboard-stats";
+import { CAMPAIGN_STATUS_BADGE_VARIANT, objectiveLabel, type Campaign } from "@/lib/mock/campaign-types";
 
 export default function CampaignDashboardPage() {
   const params = useParams<{ campaignId: string }>();
   const [campaign, setCampaign] = useState<Campaign | null | undefined>(undefined);
-  const [stats, setStats] = useState<CampaignDashboardStats | null>(null);
   const [exportMessage, setExportMessage] = useState("");
 
   useEffect(() => {
-    const found = getCampaignAnywhere(params.campaignId) ?? null;
-    setCampaign(found);
-    if (found) setStats(getCampaignStats(found.id));
+    // getCampaign() already checks the user's saved campaigns and falls back to the seed
+    // campaigns itself, so this route and /campaigns/[id] resolve the same id consistently.
+    setCampaign(getCampaign(params.campaignId) ?? null);
   }, [params.campaignId]);
+
+  // Stats are deterministic per campaign id — derive from `campaign` instead of tracking
+  // a second piece of state that has to be kept in sync by hand.
+  const stats = useMemo(() => (campaign ? getCampaignStats(campaign.id) : null), [campaign]);
 
   function handleExport() {
     if (!campaign || !stats) return;
@@ -93,7 +81,7 @@ export default function CampaignDashboardPage() {
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{campaign.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{objectiveLabel(campaign.objective)}</p>
           </div>
-          <Badge variant={STATUS_BADGE_VARIANT[campaign.status]} className="capitalize">
+          <Badge variant={CAMPAIGN_STATUS_BADGE_VARIANT[campaign.status]} className="capitalize">
             {campaign.status}
           </Badge>
         </div>

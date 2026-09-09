@@ -14,7 +14,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { getCampaigns } from "@/lib/campaigns";
+import { getCampaignsOrSeed } from "@/lib/campaigns";
 import { getBookingsForCreator, createBooking, advanceBookingStatus } from "@/lib/bookings";
 import {
   BOOKING_STATUS_LABEL,
@@ -30,10 +30,13 @@ export function CreatorBookings({ creatorId }: { creatorId: string }) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState("");
   const [open, setOpen] = useState(false);
+  const [inviteError, setInviteError] = useState("");
 
   useEffect(() => {
     setBookings(getBookingsForCreator(creatorId));
-    setCampaigns(getCampaigns());
+    // Offer the same "your campaigns" list the dashboard shows, including the seed/demo
+    // campaigns when the user hasn't created any of their own yet.
+    setCampaigns(getCampaignsOrSeed().campaigns);
   }, [creatorId]);
 
   function campaignName(campaignId: string) {
@@ -42,28 +45,28 @@ export function CreatorBookings({ creatorId }: { creatorId: string }) {
 
   function handleInvite() {
     if (!selectedCampaignId) return;
-    createBooking(creatorId, selectedCampaignId);
-    setBookings(getBookingsForCreator(creatorId));
+    const booking = createBooking(creatorId, selectedCampaignId);
+    if (!booking) {
+      setInviteError("That campaign is no longer available. Please pick another one.");
+      return;
+    }
+    setBookings((current) => (current.some((b) => b.id === booking.id) ? current : [...current, booking]));
     setSelectedCampaignId("");
+    setInviteError("");
     setOpen(false);
   }
 
   function handleAdvance(booking: Booking) {
     const next = nextBookingStatus(booking.status);
     if (!next) return;
-    advanceBookingStatus(booking.id, next);
-    setBookings(getBookingsForCreator(creatorId));
+    const updated = advanceBookingStatus(booking.id, next);
+    if (!updated) return;
+    setBookings((current) => current.map((b) => (b.id === updated.id ? updated : b)));
   }
 
   return (
     <div className="space-y-4">
-      <Dialog
-        open={open}
-        onOpenChange={(next) => {
-          setOpen(next);
-          if (next) setCampaigns(getCampaigns());
-        }}
-      >
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button size="lg" className="w-full sm:w-auto">
             Invite to campaign
@@ -99,6 +102,7 @@ export function CreatorBookings({ creatorId }: { creatorId: string }) {
               ))}
             </Select>
           )}
+          {inviteError && <p className="text-sm text-destructive">{inviteError}</p>}
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel

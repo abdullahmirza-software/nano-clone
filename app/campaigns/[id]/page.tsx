@@ -12,21 +12,7 @@ import { Section } from "@/components/layout/section";
 import { CampaignBookings } from "@/components/booking/campaign-bookings";
 import { formatCents } from "@/lib/utils";
 import { getCampaign } from "@/lib/campaigns";
-import { OBJECTIVES, CTA_TYPES, type Campaign } from "@/lib/mock/campaign-types";
-
-function objectiveLabel(value: string) {
-  return OBJECTIVES.find((o) => o.value === value)?.label ?? value;
-}
-
-function ctaLabel(value: string) {
-  return CTA_TYPES.find((c) => c.value === value)?.label ?? value;
-}
-
-const STATUS_BADGE_VARIANT = {
-  draft: "secondary",
-  active: "success",
-  completed: "outline",
-} as const;
+import { CAMPAIGN_STATUS_BADGE_VARIANT, objectiveLabel, ctaLabel, type Campaign } from "@/lib/mock/campaign-types";
 
 export default function CampaignViewPage() {
   const params = useParams<{ id: string }>();
@@ -74,7 +60,7 @@ export default function CampaignViewPage() {
               Created {new Date(campaign.createdAt).toLocaleDateString()}
             </p>
           </div>
-          <Badge variant={STATUS_BADGE_VARIANT[campaign.status]} className="capitalize">
+          <Badge variant={CAMPAIGN_STATUS_BADGE_VARIANT[campaign.status]} className="capitalize">
             {campaign.status}
           </Badge>
         </div>

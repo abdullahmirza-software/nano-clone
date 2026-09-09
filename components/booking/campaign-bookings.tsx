@@ -25,8 +25,9 @@ export function CampaignBookings({ campaignId }: { campaignId: string }) {
   function handleAdvance(booking: Booking) {
     const next = nextBookingStatus(booking.status);
     if (!next) return;
-    advanceBookingStatus(booking.id, next);
-    setBookings(getBookingsForCampaign(campaignId));
+    const updated = advanceBookingStatus(booking.id, next);
+    if (!updated) return;
+    setBookings((current) => current.map((b) => (b.id === updated.id ? updated : b)));
   }
 
   if (bookings.length === 0) {
